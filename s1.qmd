@@ -1,0 +1,163 @@
+---
+title: The Golem of Praque
+subtitle: Practice
+author: Max Hachemeister
+date: last-modified
+toc: true
+mainfont: DejaVu Sans
+fontsize: 12pt
+format:
+  gfm:
+    toc: true
+  typst:
+    toc: true
+    toc-depth: 4
+number-sections: false
+
+---
+
+```{r}
+#| label: setup
+#| output: false
+
+library(tidyverse)
+library(ggplot2)
+library(rethinking)
+```
+
+
+### 2E4.
+> What does it mean to say: "The probability of water is '0.7'."?
+
+Probability does not exist. So a water probability of 0.7 does not
+mean that the globe's actual proportion of water is 0.7. It means more
+something like: "Given what I know, I am 70% certain that I will
+see water with the next globe toss."; or "In 70% of the globe tosses
+water will be observed."
+
+### 2M1.
+> Compute and plot the grid approximate posterior distribution for each
+> of the following sets of observations. In each case, assume a uniform
+> prior for $p$.
+> 
+>  1. W, W, W
+>  2. W, W, W, L
+>  3. L, W, W, L, W, W, W
+  
+This is to be done with programming.
+
+#### This is the workflow as copied from the book.
+
+First, calculate the values:
+```{r}
+#define grid
+p_grid <- 
+  seq(from = 0, to = 1, length.out = 20)
+
+#define prior
+prior <- 
+  rep(1, 20)
+
+#compute likelihood at each value in grid
+likelihood <- 
+  dbinom(6, size = 9, prob = p_grid)
+
+#compute compute product of likelihood and prior
+unstd.posterior  <- 
+  likelihood * prior
+
+# standardize the posterior, so it sums to 1
+posterior <- 
+  unstd.posterior / sum(unstd.posterior)
+
+```
+
+Then plot:
+```{r}
+# Put it in tibble
+data <- 
+  tibble(
+    p_grid,
+    prior,
+    likelihood,
+    unstd.posterior,
+    posterior
+  )
+
+data |> 
+  ggplot(aes(p_grid, posterior)) +
+  geom_point() +
+  geom_line()
+```
+#### This is the solution to the task
+
+Now, what needs to be changed in the above cases are the values for the binomial distribution according to the sample observed. As we have defined water as *success* and we have observed "W, W, W",  we tell the function that there were three successes out of a samplesize of three, and then ask how likely this observation would have been, given the actual distribution of water and land were each to the values in the `p_grid`. So we ask, what's the most likely actual distribution of water and land, that the observed sample could have resulted from.
+
+Let's do them sequentually and maye you will see.
+I will reuse the tibble we already made, and just change the `likelihood`
+
+##### W, W, W
+```{r}
+data |> 
+  mutate(
+    likelihood = dbinom(3, size = 3, prob = p_grid)
+  ) |> 
+  ggplot(aes(p_grid, posterior)) +
+  geom_point() +
+  geom_line()
+```
+Ah well, the joke's on me. I need to have the other values recomputed also. So while I think I could write that up in a function, I will do it copy & paste but do the tibble and plot in the same step
+
+```{r}
+# make it a tibble
+tibble(
+  p_grid           = seq(from = 0, to = 1, length.out = 20),
+  prior            = rep(1, 20),
+  # this here is the thing that changes
+  likelihood       = dbinom(3, size = 4, prob = p_grid),
+  unstd.posterior  =  likelihood * prior,
+  posterior        = unstd.posterior / sum(unstd.posterior)
+) |> 
+  #plot it
+  ggplot(aes(p_grid, posterior)) +
+  geom_point() +
+  geom_line()
+```
+
+##### W, W, W, L
+
+```{r}
+# make it a tibble
+tibble(
+  p_grid           = seq(from = 0, to = 1, length.out = 20),
+  prior            = rep(1, 20),
+  # this here is the thing that changes
+  likelihood       = dbinom(3, size = 4, prob = p_grid),
+  unstd.posterior  =  likelihood * prior,
+  posterior        = unstd.posterior / sum(unstd.posterior)
+) |> 
+  #plot it
+  ggplot(aes(p_grid, posterior)) +
+  geom_point() +
+  geom_line()
+```
+
+
+##### L, W, W, L, W, W, W
+```{r}
+# make it a tibble
+tibble(
+  p_grid           = seq(from = 0, to = 1, length.out = 20),
+  prior            = rep(1, 20),
+  # this here is the thing that changes
+  likelihood       = dbinom(5, size = 2, prob = p_grid),
+  unstd.posterior  =  likelihood * prior,
+  posterior        = unstd.posterior / sum(unstd.posterior)
+) |> 
+  #plot it
+  ggplot(aes(p_grid, posterior)) +
+  geom_point() +
+  geom_line()
+```
+
+### 2M2.
