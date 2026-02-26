@@ -386,15 +386,42 @@ indiviual ways of the cards with that sum. Let's do this in R:
   tibble(
     cards = c("b/b", "b/w", "w/w"),
     ways_b = c(2, 1, 0),
-    plausibility = (ways_b / sum(ways_b))
-  ) |> 
-  knitr::kable()
+    plausibility = (ways_b / sum(ways_b)),
+    numerator = ways_b %% sum(ways_b),
+    denominator = sum(ways_b)
+  )
 ```
+Yeah, I get the efficiency of doing these things with just vectors and lines. I will do this aswell:
+```{r}
+cards <-
+  c("b/b", "b/w", "w/w")
+
+ways_b <- 
+  c( 2, 1, 0)
+
+ways_b <- 
+  setNames(ways_b, cards)
+    
+plausibility <- 
+  (ways_b / sum(ways_b))
+
+denominator <-  
+  sum(ways_b)
+
+numerator <- 
+  ways_b %% denominator
+
+plaus_results <- 
+  rbind(numerator, denominator)
+
+plaus_results
+```
+
 Ah actually, let's do it just logically.
 
 So the sum of the ways b could have came to be is 3, and the ways b could have
 come up from the card b/b is 2. So that's it: There are 2/3 Ways, that the b/b card could have been drawn and turned up with a black side.
 
 That's tricky, but a good practice, because the second side of the cards has
-nothing to do with a follow up draw, but it's importan to how the first
+nothing to do with a follow up draw, but it's important to how the first
 observation could have come to be.
